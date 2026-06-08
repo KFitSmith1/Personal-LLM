@@ -1,0 +1,20 @@
+# Secrets — never commit
+.env
+
+# Local data / volumes if bind-mounted
+surreal_data/
+notebook_data/
+data/
+
+# Personal source documents (keep these OFF GitHub)
+personal_ai_data/
+vault/
+*.pdf
+*.docx
+*.xlsx
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
