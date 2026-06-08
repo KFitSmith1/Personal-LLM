@@ -42,7 +42,9 @@ chmod +x scripts/*.sh
 ./scripts/setup.sh
 ```
 
-Prefer to do it by hand? See **Manual setup** below.
+Prefer to do it by hand? See **Manual setup** below. Day-to-day, there's a
+`Makefile`: `make setup`, `make up`, `make models`, `make logs`, `make tts`,
+`make caddy` (run `make help` for all). Overlays compose: `make up CADDY=1 TTS=1`.
 
 When it finishes:
 - Open Notebook → `http://<server-ip>:8502`
@@ -145,6 +147,9 @@ All built and ready — each is opt-in so the core stays simple:
   privacy note.)
 - **Document & audio ingestion** — [`scripts/ingest/`](./scripts/ingest/).
   Docling/MarkItDown for PDFs→Markdown, WhisperX for call/audio transcripts.
+- **Audio overviews (podcasts)** — [`integrations/tts/`](./integrations/tts/).
+  Local Kokoro TTS + `podcast.py` turns a notebook into a two-host MP3, the
+  NotebookLM "Audio Overview" feature, fully offline.
 - **Open-Generative-AI tab** — embed this Open Notebook as an iframe tab in Anil
   Matcha's studio: [`integrations/open-generative-ai/`](./integrations/open-generative-ai/).
 - **Model routing** — which model for which job (DeepSeek / Kimi K2.6 / local

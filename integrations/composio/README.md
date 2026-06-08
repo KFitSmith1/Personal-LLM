@@ -44,6 +44,14 @@ the tools in the chat UI:
    endpoint (use the `mcpo` proxy if your Open WebUI build expects an OpenAPI
    tool server rather than raw MCP).
 
+**Ready-made bridge:** `compose.mcpo.yml` runs Open WebUI's `mcpo` proxy for you:
+```bash
+cp integrations/composio/mcpo.config.example.json integrations/composio/mcpo.config.json
+# edit it: paste your Composio MCP URL + x-api-key (this file is git-ignored)
+docker compose -f docker-compose.yml -f integrations/composio/compose.mcpo.yml up -d
+# then in Open WebUI add OpenAPI tool server: http://mcpo:8000/composio
+```
+
 ### B) Code: Composio + Ollama agent (`agent.py`)
 A minimal Python agent that gives a **local** tool-calling model (e.g.
 `qwen2.5:14b`) real actions via Composio:

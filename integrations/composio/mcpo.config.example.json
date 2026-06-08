@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "composio": {
+      "type": "streamable_http",
+      "url": "https://mcp.composio.dev/REPLACE_WITH_YOUR_SERVER_PATH",
+      "headers": {
+        "x-api-key": "REPLACE_WITH_COMPOSIO_API_KEY"
+      }
+    }
+  }
+}

@@ -1,0 +1,22 @@
+# mcpo — exposes Composio's (remote) MCP server as an OpenAPI tool server that
+# Open WebUI can register, so the local model gains Composio's authenticated
+# tools with NO code.
+#
+# Usage:
+#   1. cp integrations/composio/mcpo.config.example.json integrations/composio/mcpo.config.json
+#      ...and fill in your Composio MCP URL + x-api-key (file is git-ignored).
+#   2. docker compose -f docker-compose.yml -f integrations/composio/compose.mcpo.yml up -d
+#   3. Open WebUI -> Settings -> Tools -> add OpenAPI server: http://mcpo:8000/composio
+#
+# (mcpo is Open WebUI's MCP->OpenAPI proxy: https://github.com/open-webui/mcpo)
+
+services:
+  mcpo:
+    image: ghcr.io/open-webui/mcpo:main
+    container_name: mcpo
+    command: ["--config", "/config/config.json", "--port", "8000"]
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./integrations/composio/mcpo.config.json:/config/config.json:ro
+    restart: unless-stopped

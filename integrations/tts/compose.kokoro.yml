@@ -1,0 +1,28 @@
+# Kokoro TTS — local, OpenAI-compatible text-to-speech for audio overviews.
+#
+# Gives you NotebookLM-style "Audio Overviews" (podcasts) fully offline. Exposes
+# POST /v1/audio/speech so Open WebUI, Open Notebook, and scripts/podcast.py can
+# all use it.
+#
+# Usage (overlay):
+#   GPU:  docker compose -f docker-compose.yml -f integrations/tts/compose.kokoro.yml up -d
+#   CPU:  set KOKORO_IMAGE to the -cpu tag below, then the same command.
+#
+#   Endpoint: http://<server-ip>:8880/v1   (model: kokoro, voices: af_bella, am_adam, ...)
+
+services:
+  kokoro:
+    # GPU image by default; for CPU use: ghcr.io/remsky/kokoro-fastapi-cpu:latest
+    image: ${KOKORO_IMAGE:-ghcr.io/remsky/kokoro-fastapi-gpu:latest}
+    container_name: kokoro
+    ports:
+      - "8880:8880"
+    restart: unless-stopped
+    # ---- GPU passthrough (remove this block for the -cpu image) ----
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
