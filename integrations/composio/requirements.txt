@@ -1,0 +1,4 @@
+# Composio action-layer example. SDK evolves fast — see https://docs.composio.dev
+composio>=0.7.0
+composio_openai>=0.7.0
+openai>=1.40.0

@@ -1,0 +1,37 @@
+# Caddy reverse proxy — automatic HTTPS in front of the whole stack.
+#
+# This is the recommended way to expose the stack to the internet:
+#   - terminates TLS (auto Let's Encrypt certs) so you stop using raw IP:port
+#   - keeps Ollama / SurrealDB / the API OFF the public internet
+#   - rewrites Open Notebook's frame headers so the Open-Generative-AI tab
+#     can embed it (the iframe gotcha)
+#
+# Usage (overlay on top of the base stack):
+#   1. Point DNS A-records at your server:
+#        chat.example.com  notebook.example.com  studio.example.com
+#   2. Edit ./Caddyfile — replace example.com and the email.
+#   3. Open ports 80/443:  sudo ufw allow 80 && sudo ufw allow 443
+#   4. docker compose -f docker-compose.yml -f compose.caddy.yml up -d
+#
+# Once Caddy is the front door, you can REMOVE the public port mappings
+# (3000/8502) from docker-compose.yml so nothing is reachable except via HTTPS.
+
+services:
+  caddy:
+    image: caddy:2
+    container_name: caddy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - open-webui
+      - open_notebook
+    restart: unless-stopped
+
+volumes:
+  caddy_data:
+  caddy_config:

@@ -1,0 +1,36 @@
+# n8n — automation / agent layer, sharing the stack's Ollama.
+#
+# Use for recurring research and document workflows, e.g.:
+#   - weekly: search for new ITIN-friendly lenders -> summarize -> save a note
+#   - on new CIM: extract text -> summarize -> draft a due-diligence checklist
+#
+# Usage (overlay):
+#   docker compose -f docker-compose.yml -f integrations/n8n/compose.n8n.yml up -d
+#   open http://<server-ip>:5678  (first run sets up the owner account)
+#
+# Inside n8n, reach the local model at  http://ollama:11434  (same Docker network).
+# Import ./example-workflow.json as a starting point.
+
+services:
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_HOST=${N8N_HOST:-localhost}
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - GENERIC_TIMEZONE=${TZ:-America/Toronto}
+      # Reachable from inside n8n's HTTP/Ollama nodes:
+      - OLLAMA_BASE_URL=http://ollama:11434
+    volumes:
+      - n8n_data:/home/node/.n8n
+      # Mount your knowledge vault so workflows can write notes into it:
+      - ./vault:/data/vault
+    depends_on:
+      - ollama
+    restart: unless-stopped
+
+volumes:
+  n8n_data:

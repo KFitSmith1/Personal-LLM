@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Personal LLM — local chat</title>
+<style>
+  :root { --bg:#0b0f14; --panel:#141b24; --line:#243140; --txt:#e6edf3; --muted:#8b98a5; --accent:#3b82f6; }
+  * { box-sizing:border-box; }
+  body { margin:0; height:100vh; display:flex; flex-direction:column;
+         background:var(--bg); color:var(--txt); font:15px/1.5 system-ui,sans-serif; }
+  header { padding:10px 16px; border-bottom:1px solid var(--line); display:flex;
+           gap:12px; align-items:center; background:var(--panel); }
+  header b { font-size:15px; }
+  header .sp { flex:1; }
+  select { background:var(--bg); color:var(--txt); border:1px solid var(--line);
+           border-radius:8px; padding:6px 8px; }
+  #log { flex:1; overflow:auto; padding:18px; display:flex; flex-direction:column; gap:14px; }
+  .msg { max-width:760px; width:fit-content; padding:10px 14px; border-radius:12px; white-space:pre-wrap; }
+  .user { align-self:flex-end; background:var(--accent); color:#fff; }
+  .bot  { align-self:flex-start; background:var(--panel); border:1px solid var(--line); }
+  .who { font-size:12px; color:var(--muted); margin:0 0 4px 2px; }
+  footer { padding:12px 16px; border-top:1px solid var(--line); background:var(--panel); }
+  form { display:flex; gap:10px; max-width:900px; margin:0 auto; }
+  textarea { flex:1; resize:none; height:46px; background:var(--bg); color:var(--txt);
+             border:1px solid var(--line); border-radius:10px; padding:12px; font:inherit; }
+  button { background:var(--accent); color:#fff; border:0; border-radius:10px;
+           padding:0 18px; font-weight:600; cursor:pointer; }
+  button:disabled { opacity:.5; cursor:default; }
+  .hint { max-width:900px; margin:6px auto 0; color:var(--muted); font-size:12px; }
+</style>
+</head>
+<body>
+  <header>
+    <b>🧠 Personal LLM</b>
+    <span class="sp"></span>
+    <label class="who" style="margin:0">model</label>
+    <select id="model"></select>
+  </header>
+  <div id="log">
+    <div class="bot"><div class="who">assistant</div>Hi Kevin — this is your local model running on your own PC. Pick a model above and ask me anything.</div>
+  </div>
+  <footer>
+    <form id="f">
+      <textarea id="q" placeholder="Type a message…  (Enter to send, Shift+Enter for newline)"></textarea>
+      <button id="send" type="submit">Send</button>
+    </form>
+    <div class="hint" id="hint">Talking to Ollama via this page's local server.</div>
+  </footer>
+<script>
+const log = document.getElementById('log');
+const modelSel = document.getElementById('model');
+const form = document.getElementById('f');
+const q = document.getElementById('q');
+const sendBtn = document.getElementById('send');
+const hint = document.getElementById('hint');
+const history = [];
+
+function bubble(text, who){
+  const wrap = document.createElement('div');
+  wrap.className = 'msg ' + (who === 'user' ? 'user' : 'bot');
+  const label = document.createElement('div');
+  label.className = 'who'; label.textContent = who === 'user' ? 'you' : 'assistant';
+  wrap.appendChild(label);
+  const body = document.createElement('span'); body.textContent = text;
+  wrap.appendChild(body);
+  log.appendChild(wrap); log.scrollTop = log.scrollHeight;
+  return body;
+}
+
+async function loadModels(){
+  try {
+    const r = await fetch('/api/tags');
+    const d = await r.json();
+    const names = (d.models||[]).map(m => m.name);
+    if(!names.length){ hint.textContent = 'No models yet. Run:  ollama pull llama3.2:1b'; return; }
+    modelSel.innerHTML = names.map(n => `<option>${n}</option>`).join('');
+  } catch(e){
+    hint.textContent = 'Could not reach Ollama. Is it running?  (ollama serve)';
+  }
+}
+
+async function send(text){
+  history.push({role:'user', content:text});
+  bubble(text, 'user');
+  const out = bubble('', 'bot');
+  sendBtn.disabled = true;
+  try {
+    const resp = await fetch('/api/chat', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ model: modelSel.value, messages: history, stream: true })
+    });
+    const reader = resp.body.getReader();
+    const dec = new TextDecoder();
+    let buf = '', acc = '';
+    while(true){
+      const {value, done} = await reader.read();
+      if(done) break;
+      buf += dec.decode(value, {stream:true});
+      let nl;
+      while((nl = buf.indexOf('\n')) >= 0){
+        const line = buf.slice(0, nl).trim(); buf = buf.slice(nl+1);
+        if(!line) continue;
+        try {
+          const j = JSON.parse(line);
+          if(j.message && j.message.content){ acc += j.message.content; out.textContent = acc; log.scrollTop = log.scrollHeight; }
+        } catch(_){}
+      }
+    }
+    history.push({role:'assistant', content: acc});
+  } catch(e){
+    out.textContent = '[error: ' + e.message + ']';
+  } finally {
+    sendBtn.disabled = false; q.focus();
+  }
+}
+
+form.addEventListener('submit', e => { e.preventDefault(); const t=q.value.trim(); if(t){ q.value=''; send(t); }});
+q.addEventListener('keydown', e => { if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); form.requestSubmit(); }});
+loadModels();
+</script>
+</body>
+</html>

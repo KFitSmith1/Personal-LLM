@@ -1,0 +1,105 @@
+# Personal LLM — NotebookLM-style private AI stack
+# Services:
+#   ollama        -> local model engine (GPU-accelerated)
+#   surrealdb     -> database backing Open Notebook
+#   open_notebook -> NotebookLM-style research/notebook app (UI :8502, API :5055)
+#   open-webui    -> general ChatGPT-style chat UI (:3000)
+#
+# Quick start:
+#   1. cp .env.example .env  &&  edit secrets in .env
+#   2. docker compose up -d
+#   3. ./scripts/pull-models.sh
+#   4. Open Notebook  -> http://<server-ip>:8502
+#      Open WebUI     -> http://<server-ip>:3000
+#
+# GPU NOTE: the ollama service below requests an NVIDIA GPU. The host must have
+# the NVIDIA driver + nvidia-container-toolkit installed. To run CPU-only,
+# delete the `deploy:` block on the ollama service.
+
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    environment:
+      # Allow the Obsidian desktop app (and your host) to call Ollama directly.
+      # Default keeps Ollama's built-in localhost rules. To use Obsidian plugins,
+      # set OLLAMA_ORIGINS=app://obsidian.md,* in your .env. See integrations/obsidian.
+      - OLLAMA_ORIGINS=${OLLAMA_ORIGINS:-}
+    restart: unless-stopped
+    # ---- GPU passthrough (remove this block for CPU-only hosts) ----
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  surrealdb:
+    image: surrealdb/surrealdb:v2
+    container_name: personal-llm-surrealdb
+    command: start --log info --user ${SURREAL_USER} --pass ${SURREAL_PASSWORD} rocksdb:/mydata/database.db
+    user: root
+    ports:
+      - "8000:8000"
+    volumes:
+      - surreal_data:/mydata
+    environment:
+      - SURREAL_EXPERIMENTAL_GRAPHQL=true
+    restart: unless-stopped
+
+  open_notebook:
+    image: lfnovo/open_notebook:v1-latest
+    container_name: open-notebook
+    ports:
+      - "8502:8502"   # Web UI
+      - "5055:5055"   # REST API
+    environment:
+      - OPEN_NOTEBOOK_ENCRYPTION_KEY=${OPEN_NOTEBOOK_ENCRYPTION_KEY}
+      - SURREAL_URL=ws://surrealdb:8000/rpc
+      - SURREAL_USER=${SURREAL_USER}
+      - SURREAL_PASSWORD=${SURREAL_PASSWORD}
+      - SURREAL_NAMESPACE=open_notebook
+      - SURREAL_DATABASE=open_notebook
+      - OLLAMA_BASE_URL=http://ollama:11434
+      # Cloud models (DeepSeek-V3.2 etc.) via OpenRouter — optional, see MODELS.md.
+      # Also register the OpenAI-compatible provider in Settings -> Models.
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+      # Optional: gate the UI behind basic auth (recommended if exposed)
+      - BASIC_AUTH_USERNAME=${BASIC_AUTH_USERNAME}
+      - BASIC_AUTH_PASSWORD=${BASIC_AUTH_PASSWORD}
+    volumes:
+      - notebook_data:/app/data
+    depends_on:
+      - surrealdb
+      - ollama
+    restart: unless-stopped
+
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open-webui
+    ports:
+      - "3000:8080"
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - WEBUI_AUTH=true
+      # Expose OpenRouter as an OpenAI-compatible connection so cloud models
+      # (deepseek/deepseek-v3.2, moonshotai/kimi-k2.6) appear alongside local
+      # Ollama models. Harmless if OPENROUTER_API_KEY is blank. See MODELS.md.
+      - OPENAI_API_BASE_URL=https://openrouter.ai/api/v1
+      - OPENAI_API_KEY=${OPENROUTER_API_KEY:-}
+    volumes:
+      - open_webui_data:/app/backend/data
+    depends_on:
+      - ollama
+    restart: unless-stopped
+
+volumes:
+  ollama_models:
+  surreal_data:
+  notebook_data:
+  open_webui_data:

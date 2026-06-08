@@ -1,0 +1,34 @@
+# Overlay that adds Open-Generative-AI alongside the Personal-LLM stack so the
+# embedded Notebook tab and the studio share one Ollama + one network.
+#
+# Usage (from the repo root, AFTER cloning open-generative-ai next to this repo):
+#
+#   git clone --recurse-submodules https://github.com/anil-matcha/open-generative-ai.git ../open-generative-ai
+#   docker compose \
+#     -f docker-compose.yml \
+#     -f integrations/open-generative-ai/compose.add-open-generative-ai.yml \
+#     up -d --build
+#
+# The service builds from the sibling checkout. Adjust `context` if you put it
+# elsewhere. Open the studio at http://<server-ip>:3001 and use the Notebook tab.
+
+services:
+  open-generative-ai:
+    build:
+      context: ../open-generative-ai
+    container_name: open-generative-ai
+    ports:
+      - "3001:3000"
+    environment:
+      - NODE_ENV=production
+      # The iframe loads Open Notebook in the *browser*, so this must be a URL
+      # the browser can reach — your server's public host/IP, not the Docker
+      # service name. Override per deployment.
+      - NEXT_PUBLIC_NOTEBOOK_URL=http://localhost:8502
+      # Server-side calls (if you later add API proxy routes) use the internal name:
+      - NOTEBOOK_API_URL=http://open_notebook:5055
+      - OLLAMA_BASE_URL=http://ollama:11434
+    depends_on:
+      - open_notebook
+      - ollama
+    restart: unless-stopped
