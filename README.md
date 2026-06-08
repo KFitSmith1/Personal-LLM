@@ -129,7 +129,8 @@ Edit `Modelfile`, then rebuild: `docker exec -it ollama ollama create kevin-assi
 - **n8n** for research agents and scheduled report automations.
 - **Docling / MarkItDown / WhisperX** for heavy PDF + audio ingestion.
 - **Open-Generative-AI tab**: embed this Open Notebook as an iframe tab in
-  Anil Matcha's studio (ask and I'll wire up the sidecar + `NotebookStudio` tab).
+  Anil Matcha's studio — ready-to-apply files + guide in
+  [`integrations/open-generative-ai/`](./integrations/open-generative-ai/).
 
 ---
 
