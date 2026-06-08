@@ -24,6 +24,11 @@ services:
       - "11434:11434"
     volumes:
       - ollama_models:/root/.ollama
+    environment:
+      # Allow the Obsidian desktop app (and your host) to call Ollama directly.
+      # Default keeps Ollama's built-in localhost rules. To use Obsidian plugins,
+      # set OLLAMA_ORIGINS=app://obsidian.md,* in your .env. See integrations/obsidian.
+      - OLLAMA_ORIGINS=${OLLAMA_ORIGINS:-}
     restart: unless-stopped
     # ---- GPU passthrough (remove this block for CPU-only hosts) ----
     deploy:

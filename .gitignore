@@ -2,6 +2,9 @@
 .env
 integrations/composio/mcpo.config.json
 
+# Backups
+backups/
+
 # Local data / volumes if bind-mounted
 surreal_data/
 notebook_data/

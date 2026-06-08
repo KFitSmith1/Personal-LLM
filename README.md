@@ -174,6 +174,12 @@ All built and ready — each is opt-in so the core stays simple:
   NotebookLM "Audio Overview" feature, fully offline.
 - **Open-Generative-AI tab** — embed this Open Notebook as an iframe tab in Anil
   Matcha's studio: [`integrations/open-generative-ai/`](./integrations/open-generative-ai/).
+- **Obsidian knowledge vault** — [`integrations/obsidian/`](./integrations/obsidian/).
+  Guide + starter vault to chat over your notes (Copilot/Smart Connections) using
+  this Ollama; includes the `OLLAMA_ORIGINS` desktop-app fix.
+- **Backup / restore** — `make backup` / `make restore DIR=...`
+  ([`scripts/backup.sh`](./scripts/backup.sh)) snapshot the SurrealDB, Open
+  Notebook, and Open WebUI data volumes (+ secrets).
 - **Model routing** — which model for which job (DeepSeek / Kimi K2.6 / local
   distills): [`MODELS.md`](./MODELS.md).
 - **Bigger models**: uncomment `deepseek-r1:32b` in `pull-models.sh` (≥24 GB VRAM).

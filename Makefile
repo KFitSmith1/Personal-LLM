@@ -17,7 +17,7 @@ endif
 
 .DEFAULT_GOAL := help
 
-.PHONY: help setup up down restart ps logs models caddy tts n8n config demo demo-down
+.PHONY: help setup up down restart ps logs models caddy tts n8n config demo demo-down backup restore
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
@@ -52,6 +52,12 @@ config: ## Validate the (possibly overlaid) compose config
 
 models: ## Pull models + build the kevin-assistant persona
 	./scripts/pull-models.sh
+
+backup: ## Back up data volumes + secrets (MODELS=1 to include models)
+	./scripts/backup.sh
+
+restore: ## Restore from a backup folder:  make restore DIR=./backups/...
+	./scripts/restore.sh $(DIR)
 
 caddy: ## Start with the HTTPS reverse proxy
 	$(MAKE) up CADDY=1
