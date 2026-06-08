@@ -61,6 +61,9 @@ services:
       - SURREAL_NAMESPACE=open_notebook
       - SURREAL_DATABASE=open_notebook
       - OLLAMA_BASE_URL=http://ollama:11434
+      # Cloud models (DeepSeek-V3.2 etc.) via OpenRouter — optional, see MODELS.md.
+      # Also register the OpenAI-compatible provider in Settings -> Models.
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
       # Optional: gate the UI behind basic auth (recommended if exposed)
       - BASIC_AUTH_USERNAME=${BASIC_AUTH_USERNAME}
       - BASIC_AUTH_PASSWORD=${BASIC_AUTH_PASSWORD}
@@ -79,6 +82,11 @@ services:
     environment:
       - OLLAMA_BASE_URL=http://ollama:11434
       - WEBUI_AUTH=true
+      # Expose OpenRouter as an OpenAI-compatible connection so cloud models
+      # (deepseek/deepseek-v3.2, moonshotai/kimi-k2.6) appear alongside local
+      # Ollama models. Harmless if OPENROUTER_API_KEY is blank. See MODELS.md.
+      - OPENAI_API_BASE_URL=https://openrouter.ai/api/v1
+      - OPENAI_API_KEY=${OPENROUTER_API_KEY:-}
     volumes:
       - open_webui_data:/app/backend/data
     depends_on:

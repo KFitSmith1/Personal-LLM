@@ -1,7 +1,10 @@
 # Personal LLM — your private NotebookLM
 
 A self-hosted, NotebookLM-style AI that runs on **your** GPU server with **your**
-data. No data leaves the box. One `docker compose up` brings up four services:
+data. No data leaves the box. Different models do different jobs — local
+DeepSeek-R1 distills for private work, cloud DeepSeek-V3.2 / Kimi K2.6 for heavy
+reasoning + coding (see **[MODELS.md](./MODELS.md)**). One `docker compose up`
+brings up four services:
 
 | Service | What it is | URL |
 |---|---|---|
@@ -72,9 +75,10 @@ Open Notebook ships empty — point it at your local Ollama:
 2. Add an **Ollama** provider with Base URL: `http://ollama:11434`
    *(use this exact hostname — services talk over the internal Docker network)*
 3. **Test Connection → Discover Models → Register Models**
-4. Set defaults:
-   - **Chat model**: `llama3.1:8b` (or `qwen2.5:14b`)
-   - **Embedding model**: `nomic-embed-text` ← required for search/citations
+4. Set defaults (see [MODELS.md](./MODELS.md) for the full routing strategy):
+   - **Chat model**: `deepseek-r1:14b` local, or `deepseek/deepseek-v3.2` via
+     OpenRouter for heavier document reasoning
+   - **Embedding model**: `nomic-embed-text` (or `bge-m3`) ← required for search/citations
 
 ---
 
