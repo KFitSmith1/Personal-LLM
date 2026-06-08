@@ -17,13 +17,16 @@ endif
 
 .DEFAULT_GOAL := help
 
-.PHONY: help setup up down restart ps logs models caddy tts n8n config demo demo-down backup restore
+.PHONY: help setup up down restart ps logs models caddy tts n8n config demo demo-down backup restore webchat
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
 	  | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-10s\033[0m %s\n", $$1, $$2}'
 
-demo: ## Local test on your laptop (no GPU, tiny model) -> http://localhost:3000
+webchat: ## Lightest local test (just Ollama + Python) -> http://localhost:8000
+	python3 webchat/serve.py
+
+demo: ## Fuller local test via Docker (Open WebUI + Notebook) -> http://localhost:3000
 	./scripts/demo.sh
 
 demo-down: ## Stop the local test stack (add WIPE=1 to also delete its data)

@@ -32,8 +32,18 @@ brings up four services:
 
 ## Try it locally first (no GPU)
 
-Want to kick the tires on your own laptop before renting a GPU? One command
-brings up a CPU-only test stack with a tiny model:
+**Lightest option — no Docker.** Just install [Ollama](https://ollama.com/download),
+then:
+```bash
+ollama pull llama3.2:1b
+python webchat/serve.py        # or: make webchat
+```
+A chat UI opens at **http://localhost:8000**. Details in
+[`webchat/`](./webchat/). Good for a quick "does my model work" test.
+
+**Fuller option — needs Docker.** For the full NotebookLM-style experience
+(sources, citations, audio overviews), one command brings up a CPU-only test
+stack with a tiny model:
 
 ```bash
 make demo            # or: ./scripts/demo.sh
