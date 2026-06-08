@@ -1,0 +1,76 @@
+# LOCAL TEST STACK — zero config, no GPU, tiny model. For trying it on your
+# laptop before deploying to a real GPU server. NOT for production.
+#
+#   docker compose -f docker-compose.test.yml up -d
+#   # (first run, pull a tiny model:)
+#   docker exec -it ollama-test ollama pull llama3.2:1b
+#   docker exec -it ollama-test ollama pull nomic-embed-text
+#   # then open:
+#   #   Open WebUI    -> http://localhost:3000   (auth disabled for testing)
+#   #   Open Notebook -> http://localhost:8502
+#
+# Or just run:  make demo     (does all of the above for you)
+#
+# Differences from the production docker-compose.yml:
+#   - NO GPU block (runs on CPU — small models only, expect slowness)
+#   - secrets are hard-coded test values (fine for localhost, NOT for the internet)
+#   - Open WebUI auth is OFF for frictionless testing
+
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama-test
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_test_models:/root/.ollama
+    restart: unless-stopped
+
+  surrealdb:
+    image: surrealdb/surrealdb:v2
+    container_name: surrealdb-test
+    command: start --log info --user root --pass test rocksdb:/mydata/database.db
+    user: root
+    volumes:
+      - surreal_test_data:/mydata
+    environment:
+      - SURREAL_EXPERIMENTAL_GRAPHQL=true
+    restart: unless-stopped
+
+  open_notebook:
+    image: lfnovo/open_notebook:v1-latest
+    container_name: open-notebook-test
+    ports:
+      - "8502:8502"
+      - "5055:5055"
+    environment:
+      - OPEN_NOTEBOOK_ENCRYPTION_KEY=test-only-not-secret
+      - SURREAL_URL=ws://surrealdb:8000/rpc
+      - SURREAL_USER=root
+      - SURREAL_PASSWORD=test
+      - SURREAL_NAMESPACE=open_notebook
+      - SURREAL_DATABASE=open_notebook
+      - OLLAMA_BASE_URL=http://ollama:11434
+    depends_on:
+      - surrealdb
+      - ollama
+    restart: unless-stopped
+
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open-webui-test
+    ports:
+      - "3000:8080"
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - WEBUI_AUTH=false   # no login prompt — testing only
+    volumes:
+      - open_webui_test_data:/app/backend/data
+    depends_on:
+      - ollama
+    restart: unless-stopped
+
+volumes:
+  ollama_test_models:
+  surreal_test_data:
+  open_webui_test_data:

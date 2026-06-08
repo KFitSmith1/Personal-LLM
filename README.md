@@ -30,6 +30,28 @@ brings up four services:
 
 ---
 
+## Try it locally first (no GPU)
+
+Want to kick the tires on your own laptop before renting a GPU? One command
+brings up a CPU-only test stack with a tiny model:
+
+```bash
+make demo            # or: ./scripts/demo.sh
+```
+
+Then open:
+- **Chat (Open WebUI)** → http://localhost:3000  (login disabled for testing)
+- **NotebookLM (Open Notebook)** → http://localhost:8502
+
+It pulls a ~1.3 GB model (`llama3.2:1b`) and runs on CPU — correct but slow; it
+just proves the wiring. Tear down with `make demo-down` (add `WIPE=1` to delete
+its data). Uses [`docker-compose.test.yml`](./docker-compose.test.yml) with
+hard-coded test secrets — **localhost only, never expose it**.
+
+> Only need Docker for this — no GPU, no `.env`, no NVIDIA toolkit.
+
+---
+
 ## Quick start
 
 ```bash
