@@ -1,0 +1,28 @@
+# Replace example.com with your domain and set a real email for Let's Encrypt.
+# Each block gets an automatic HTTPS certificate.
+
+{
+	email you@example.com
+}
+
+# --- General ChatGPT-style UI ---
+chat.example.com {
+	reverse_proxy open-webui:8080
+}
+
+# --- NotebookLM-style app ---
+# The header rewrites let the Open-Generative-AI studio embed this in an iframe.
+# Without them, Open Notebook's default frame headers block embedding.
+notebook.example.com {
+	reverse_proxy open_notebook:8502 {
+		# Drop the deny-embedding header from the upstream response...
+		header_down -X-Frame-Options
+		# ...and explicitly allow only your studio origin to frame it.
+		header_down Content-Security-Policy "frame-ancestors https://studio.example.com"
+	}
+}
+
+# --- Open-Generative-AI studio (only if you run the integration overlay) ---
+studio.example.com {
+	reverse_proxy open-generative-ai:3000
+}

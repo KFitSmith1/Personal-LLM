@@ -1,0 +1,13 @@
+# Document ingestion helpers. Install in a venv:
+#   python3 -m venv .venv && source .venv/bin/activate
+#   pip install -r scripts/ingest/requirements.txt
+
+# PDF / DOCX / PPTX -> clean structured Markdown (tables, OCR, reading order)
+docling>=2.0.0
+
+# Lightweight fallback converter for simple files
+markitdown>=0.0.1a2
+
+# Audio / video -> transcript with word timestamps + speaker labels.
+# (Heavy; needs ffmpeg + a torch build. Install separately if you do audio.)
+# whisperx>=3.1.1

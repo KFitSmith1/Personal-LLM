@@ -1,0 +1,58 @@
+{
+  "name": "Weekly lender research (starter)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            { "field": "weeks", "triggerAtDay": [1], "triggerAtHour": 7 }
+          ]
+        }
+      },
+      "id": "a1b2c3d4-0001-4000-8000-000000000001",
+      "name": "Every Monday 7am",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://ollama:11434/api/generate",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"deepseek-r1:14b\",\n  \"stream\": false,\n  \"prompt\": \"Summarize what an ITIN-friendly small-business lender typically requires for a clinic acquisition loan. Output a short, scannable markdown brief with headings.\"\n}",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0002-4000-8000-000000000002",
+      "name": "Ask local model",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [520, 300]
+    },
+    {
+      "parameters": {
+        "fileName": "/data/vault/07 Research Sources/lender-brief-{{ $now.format('yyyy-LL-dd') }}.md",
+        "dataPropertyName": "data",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0003-4000-8000-000000000003",
+      "name": "Save note to vault",
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [800, 300],
+      "notes": "Set 'Operation' = Write. The model's text is in {{$json.response}} — convert it to a binary 'data' field (Move Binary Data / Code node) before this step. Wired loosely on purpose; finish it in the editor."
+    }
+  ],
+  "connections": {
+    "Every Monday 7am": {
+      "main": [[{ "node": "Ask local model", "type": "main", "index": 0 }]]
+    },
+    "Ask local model": {
+      "main": [[{ "node": "Save note to vault", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "pinData": {}
+}

@@ -126,15 +126,27 @@ Edit `Modelfile`, then rebuild: `docker exec -it ollama ollama create kevin-assi
 
 ---
 
-## Scaling up later (optional, not built here)
+## Production & extras (optional overlays)
 
-- **Bigger models**: uncomment `qwen2.5:14b` in `pull-models.sh` (needs ~24 GB VRAM).
+All built and ready — each is opt-in so the core stays simple:
+
+- **HTTPS reverse proxy** — [`compose.caddy.yml`](./compose.caddy.yml) +
+  [`Caddyfile`](./Caddyfile). Auto Let's Encrypt certs, hides raw ports, and
+  rewrites Open Notebook's frame headers so the studio tab can embed it:
+  ```bash
+  docker compose -f docker-compose.yml -f compose.caddy.yml up -d
+  ```
+- **n8n agents / automation** — [`integrations/n8n/`](./integrations/n8n/).
+  Scheduled research → vault notes, sharing the same Ollama. Includes a starter
+  workflow.
+- **Document & audio ingestion** — [`scripts/ingest/`](./scripts/ingest/).
+  Docling/MarkItDown for PDFs→Markdown, WhisperX for call/audio transcripts.
+- **Open-Generative-AI tab** — embed this Open Notebook as an iframe tab in Anil
+  Matcha's studio: [`integrations/open-generative-ai/`](./integrations/open-generative-ai/).
+- **Model routing** — which model for which job (DeepSeek / Kimi K2.6 / local
+  distills): [`MODELS.md`](./MODELS.md).
+- **Bigger models**: uncomment `deepseek-r1:32b` in `pull-models.sh` (≥24 GB VRAM).
 - **Obsidian** as a long-term knowledge vault + Smart Connections / Copilot.
-- **n8n** for research agents and scheduled report automations.
-- **Docling / MarkItDown / WhisperX** for heavy PDF + audio ingestion.
-- **Open-Generative-AI tab**: embed this Open Notebook as an iframe tab in
-  Anil Matcha's studio — ready-to-apply files + guide in
-  [`integrations/open-generative-ai/`](./integrations/open-generative-ai/).
 
 ---
 
