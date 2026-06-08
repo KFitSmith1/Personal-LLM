@@ -137,8 +137,12 @@ All built and ready — each is opt-in so the core stays simple:
   docker compose -f docker-compose.yml -f compose.caddy.yml up -d
   ```
 - **n8n agents / automation** — [`integrations/n8n/`](./integrations/n8n/).
-  Scheduled research → vault notes, sharing the same Ollama. Includes a starter
-  workflow.
+  Scheduled, fully-local research → vault notes, sharing the same Ollama.
+- **Composio action layer** — [`integrations/composio/`](./integrations/composio/).
+  Lets the assistant take authenticated SaaS actions (Gmail, Calendar, Notion…)
+  via MCP/tool-calling. Better than n8n for *on-demand agentic actions*; n8n
+  stays better for *deterministic local cron*. (Managed auth is cloud — see the
+  privacy note.)
 - **Document & audio ingestion** — [`scripts/ingest/`](./scripts/ingest/).
   Docling/MarkItDown for PDFs→Markdown, WhisperX for call/audio transcripts.
 - **Open-Generative-AI tab** — embed this Open Notebook as an iframe tab in Anil
